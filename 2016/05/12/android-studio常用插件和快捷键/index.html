@@ -223,7 +223,7 @@
                                                                         
                                     </div>
                                     <footer class="article-footer">
-                                        <a data-url="https://zequn.tech/2016/05/12/android-studio%E5%B8%B8%E7%94%A8%E6%8F%92%E4%BB%B6%E5%92%8C%E5%BF%AB%E6%8D%B7%E9%94%AE/" data-id="ck9zkomys0002ittudimp5ljy" class="article-share-link">
+                                        <a data-url="https://zequn.tech/2016/05/12/android-studio%E5%B8%B8%E7%94%A8%E6%8F%92%E4%BB%B6%E5%92%8C%E5%BF%AB%E6%8D%B7%E9%94%AE/" data-id="ck9zm9i9g000042tu58u184pk" class="article-share-link">
                                             分享
                                         </a>
                                         
@@ -260,6 +260,32 @@
                 
                     
                         
+  <div class="gitalk" id="gitalk-container"></div>
+  
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+  
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+
+  <script type="text/javascript">
+    var gitalk = new Gitalk({
+      clientID: 'a98ce1257da9fa717280',
+      clientSecret: '7a91f8c90c490ea5b8b8d773898bdcf3e0572771',
+      repo: 'blog-talk',
+      owner: 'zequntech',
+      admin: ['zequntech'],
+      // id: location.pathname,      // Ensure uniqueness and length less than 50
+      id: md5(location.pathname),
+      distractionFreeMode: false,  // Facebook-like distraction free mode
+      pagerDirection: 'last'
+    })
+
+  gitalk.render('gitalk-container')
+  </script>
+
                             
 
 </article>
