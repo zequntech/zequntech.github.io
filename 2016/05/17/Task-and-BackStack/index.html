@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+    <meta name="description" content="用文字记录成长">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    Task and the BackStack |
+    
+    zequn的博客</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 4.2.0"><link rel="alternate" href="/atom.xml" title="zequn的博客" type="application/atom+xml">
+</head>
+
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-Task-and-BackStack" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+  
+    <h1 class="article-title" itemprop="name">
+      Task and the BackStack
+    </h1>
+  
+  
+
+
+
+
+            </header>
+            
+
+                
+                    <div class="article-meta">
+                        <a href="/2016/05/17/Task-and-BackStack/" class="article-date">
+  <time datetime="2016-05-17T08:55:38.000Z" itemprop="datePublished">2016-05-17</time>
+</a>
+                            
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/android/">android</a>
+  </div>
+
+                    </div>
+                    
+
+                        
+                            
+    <div class="tocbot"></div>
+
+
+
+
+
+                                
+
+                                    <div class="article-entry" itemprop="articleBody">
+                                        
+
+
+                                            
+
+                                                
+                                                                    <h3 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h3><blockquote>
+</blockquote>
+<ul>
+<li>新闻类App有新内容推送过来时，从Notification打开详情页面，此时按返回键，返回的是新闻列表页（主页面）。  </li>
+<li>邮件类型的App，从邮件列表进入到详情，并从详情页面进入到更深的子页面，此时返回键是根据用户浏览习惯返回，顶部导航（ActionBar)返回的是邮件列表页。</li>
+</ul>
+<a id="more"></a>
+
+<h4 id="实现新闻的效果"><a href="#实现新闻的效果" class="headerlink" title="实现新闻的效果"></a>实现新闻的效果</h4><p>PendingIntent携带任务栈信息，配置xml,DetailsActivity配置parentActivity;</p>
+<ul>
+<li>配置文件</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">application</span>     </span></span><br><span class="line"><span class="tag">        <span class="attr">android:name</span>=<span class="string">".MyApplication"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">activity</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:name</span>=<span class="string">".MainActivity"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.MAIN"</span> /&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.LAUNCHER"</span> /&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- DetailsActivity的parentActivity是MainActivity --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">activity</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:name</span>=<span class="string">".DetailsActivity"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:parentActivityName</span>=<span class="string">".MainActivity"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">meta-data</span></span></span><br><span class="line"><span class="tag">                <span class="attr">android:name</span>=<span class="string">"android.support.PARENT_ACTIVITY"</span></span></span><br><span class="line"><span class="tag">                <span class="attr">android:value</span>=<span class="string">".MainActivity"</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">service</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:name</span>=<span class="string">".MyService"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:enabled</span>=<span class="string">"true"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:exported</span>=<span class="string">"true"</span>&gt;</span><span class="tag">&lt;/<span class="name">service</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<!-- more -->
+<ul>
+<li>Service里开启一个Notification(just demo)  </li>
+</ul>
+<blockquote>
+<p>原理是利用TaskStackBuilder来返回PendingIntent,这样在startActivity的时候会构建Activity栈</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyService</span> <span class="keyword">extends</span> <span class="title">Service</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate();</span><br><span class="line">        <span class="comment">//如果直接使用PendingIntent.getActivity，按下返回键只能返回到launcher界面</span></span><br><span class="line">        <span class="comment">//PendingIntent pendingIntent = PendingIntent.getActivity(this, 1, new Intent(this, DetailsActivity.class), PendingIntent.FLAG_ONE_SHOT);</span></span><br><span class="line">        <span class="comment">// Construct the Intent you want to end up at</span></span><br><span class="line">        Intent detailActivity = <span class="keyword">new</span> Intent(<span class="keyword">this</span>, DetailsActivity<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        TaskStackBuilder stackBuilder = TaskStackBuilder.create(<span class="keyword">this</span>);</span><br><span class="line">        stackBuilder.addNextIntentWithParentStack(detailActivity);</span><br><span class="line">        PendingIntent pendingIntent = stackBuilder</span><br><span class="line">                .getPendingIntent(<span class="number">0</span>, PendingIntent.FLAG_UPDATE_CURRENT);</span><br><span class="line"></span><br><span class="line">        NotificationCompat.Builder builder = <span class="keyword">new</span> NotificationCompat.Builder(<span class="keyword">this</span>);</span><br><span class="line">        builder.setContentText(<span class="string">"测试内容"</span>).</span><br><span class="line">                setContentIntent(pendingIntent).</span><br><span class="line">                setAutoCancel(<span class="keyword">true</span>);</span><br><span class="line">        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);</span><br><span class="line">        manager.notify(<span class="number">1</span>, builder.build());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h4><ol>
+<li>Notification打开DetailsActivity的时候,此时MainActivity已经销毁，只剩下Service<br> <code>05-17 16:07:42.314 4946-4946/com.asura.justfortest I/TAG: onCreate: DetailsActivity</code><br> 按下返回键的时候<br> <code>05-17 16:07:46.916 4946-4946/com.asura.justfortest I/TAG: onCreate: MainActivity</code><br> 好处是本应用没有开启，这种方式返回时可以带到主页去</li>
+<li>当MainActivity和DetailsActivity都存在的情况下，使用这种方式会将app现有的Task栈<code>取代</code>,即现有的所有Activity会销毁，即使设置launchMode为singleTask也没用</li>
+<li>对于不想销毁现有的任务栈的情况，notification配intent时就不要配置TaskStack,针对DetailsActivity可以覆盖返回键，当Task栈为空的时候，启动带Stack的Intent，如果栈不为空，直接finish掉.</li>
+</ol>
+<h4 id="顶部导航或者返回键回到父页面-中间的会被销毁"><a href="#顶部导航或者返回键回到父页面-中间的会被销毁" class="headerlink" title="顶部导航或者返回键回到父页面(中间的会被销毁)"></a>顶部导航或者返回键回到父页面(中间的会被销毁)</h4><p>覆盖onOptionsItemSelected，onBackPress();其中，调用NavUtils.getParentActivityIntent()方法可以获取到跳转至父Activity的Intent，然后如果父Activity和当前Activity是在同一个Task中的，则直接调用navigateUpTo()方法进行跳转，如果不是在同一个Task中的，则需要借助TaskStackBuilder来创建一个新的Task</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span>  </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onOptionsItemSelected</span><span class="params">(MenuItem item)</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">switch</span> (item.getItemId()) &#123;  </span><br><span class="line">    <span class="keyword">case</span> android.R.id.home:  </span><br><span class="line">        goToMain();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;  </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...  </span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBackPressed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    goToMain();</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">goToMain</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Intent upIntent = NavUtils.getParentActivityIntent(<span class="keyword">this</span>);</span><br><span class="line">    <span class="keyword">if</span> (NavUtils.shouldUpRecreateTask(<span class="keyword">this</span>, upIntent)) &#123;</span><br><span class="line">        TaskStackBuilder.create(<span class="keyword">this</span>)</span><br><span class="line">                .addNextIntentWithParentStack(upIntent)</span><br><span class="line">                .startActivities();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">//设置CLEAR_TOP如果MainActivity存在，会调用onNewIntent()方法</span></span><br><span class="line">        upIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);</span><br><span class="line">        NavUtils.navigateUpTo(<span class="keyword">this</span>, upIntent);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
+<li><a href="https://medium.com/google-developers/tasks-and-the-back-stack-dbb7c3b0f6d4#.ucprfwxig" target="_blank" rel="noopener">Tasks and the Back Stack</a>  </li>
+<li><a href="http://blog.csdn.net/guolin_blog/article/details/18234477" target="_blank" rel="noopener">Android ActionBar完全解析，使用官方推荐的最佳导航栏(上)</a>    </li>
+<li><a href="https://developer.android.com/guide/topics/ui/notifiers/notifications.html" target="_blank" rel="noopener">notification官方文档</a>  </li>
+</ul>
+
+                                                                        
+                                    </div>
+                                    <footer class="article-footer">
+                                        <a data-url="https://zequntech.github.io/2016/05/17/Task-and-BackStack/" data-id="ck9zfy72s0000sgtu3qh27sbt" class="article-share-link">
+                                            分享
+                                        </a>
+                                        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PendingIntent/" rel="tag">PendingIntent</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TaskStackBuilder/" rel="tag">TaskStackBuilder</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/" rel="tag">android</a></li></ul>
+
+                                    </footer>
+
+    </div>
+
+    
+        
+  <nav class="article-nav">
+    
+      <a href="/2016/07/28/dagger2-tutorial/" class="article-nav-link">
+        <strong class="article-nav-caption">前一篇</strong>
+        <div class="article-nav-title">
+          
+            Dagger2总结
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2016/05/12/android-studio%E5%B8%B8%E7%94%A8%E6%8F%92%E4%BB%B6%E5%92%8C%E5%BF%AB%E6%8D%B7%E9%94%AE/" class="article-nav-link">
+        <strong class="article-nav-caption">后一篇</strong>
+        <div class="article-nav-title">android studio常用插件和快捷键</div>
+      </a>
+    
+  </nav>
+
+
+            
+
+                
+                    
+                        
+                            
+
+</article>
+</section>
+  <footer class="footer">
+  <div class="outer">
+    <!-- <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+    <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div> -->
+    <ul class="list-inline">
+      <li>&copy; 2020 zequn</li>
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean" target="_blank" rel="noopener">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/cat.svg" alt="zequn的博客"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">首页</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">归档</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/categories">分类</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/tags">标签</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">关于</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="搜索">
+        <i class="fe fe-search"></i>
+        搜索
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+  
+<script src="/js/tocbot.min.js"></script>
+
+  <script>
+    // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+    tocbot.init({
+      tocSelector: '.tocbot',
+      contentSelector: '.article-entry',
+      headingSelector: 'h1, h2, h3, h4, h5, h6',
+      hasInnerContainers: true,
+      scrollSmooth: true,
+      positionFixedSelector: '.tocbot',
+      positionFixedClass: 'is-position-fixed',
+      fixedSidebarOffset: 'auto',
+    });
+  </script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+
+</body>
+</html>
