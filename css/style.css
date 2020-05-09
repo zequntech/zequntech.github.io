@@ -1151,6 +1151,17 @@ img {
   font-family: feathericon;
   margin-right: 0.5rem;
 }
+.category-list-count {
+  color: $grey;
+}
+.category-list-count:before {
+  display: inline;
+  content: "(";
+}
+.category-list-count:after {
+  display: inline;
+  content: ")";
+}
 .tag-list {
   list-style: none;
   padding-left: 0;
@@ -1166,6 +1177,17 @@ img {
   content: "\f153";
   font-family: feathericon;
   margin-right: 0.5rem;
+}
+.tag-list-count {
+  color: $grey;
+}
+.tag-list-count:before {
+  display: inline;
+  content: " (";
+}
+.tag-list-count:after {
+  display: inline;
+  content: ") ";
 }
 .video {
   position: relative;
@@ -1430,17 +1452,17 @@ img {
   margin-left: 0;
   margin: 0;
 }
-.article-tag-list:before {
-  content: "\f153";
-  font-family: feathericon;
-  margin-right: 0.5rem;
-}
 .article-tag-list .article-tag-list-item {
   display: inline-block;
   padding-right: 1rem;
 }
 .article-tag-list .article-tag-list-link {
   text-decoration: none;
+}
+.article-tag-list-item:before {
+  content: "\f153";
+  font-family: feathericon;
+  margin-right: 0.5rem;
 }
 .article-comment-link {
   float: right;
