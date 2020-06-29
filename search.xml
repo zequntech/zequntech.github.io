@@ -56,6 +56,13 @@
 <p>最后执行<code>npm run serve:docs</code>，就可以在<code>localhost:8080</code>看到接口文档了。 apidoc是一个很棒的工具，基于apidoc衍生的工具也很多，开发人员多不爱写文档，但是没有文档，一旦代码量上来了，对后续维护的人来说就是一场灾难，将apidoc引入工作流是个不错的选择。</p>
 </blockquote>
 ]]></content>
+      <categories>
+        <category>工作流</category>
+      </categories>
+      <tags>
+        <tag>apidoc</tag>
+        <tag>js</tag>
+      </tags>
   </entry>
   <entry>
     <title>算法题-将Android的view内的控件全部涂成红色</title>
