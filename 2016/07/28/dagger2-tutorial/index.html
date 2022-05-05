@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+    <meta name="description" content="用文字记录成长">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    Dagger2总结 |
+    
+    zequn的博客</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 4.2.0"><link rel="alternate" href="/atom.xml" title="zequn的博客" type="application/atom+xml">
+</head>
+
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-dagger2-tutorial" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+  
+    <h1 class="article-title" itemprop="name">
+      Dagger2总结
+    </h1>
+  
+  
+
+
+
+
+            </header>
+            
+
+                
+                    <div class="article-meta">
+                        <a href="/2016/07/28/dagger2-tutorial/" class="article-date">
+  <time datetime="2016-07-28T09:16:37.000Z" itemprop="datePublished">2016-07-28</time>
+</a>
+                            
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/android/">android</a>
+  </div>
+
+                    </div>
+                    
+
+                        
+                            
+    <div class="tocbot"></div>
+
+
+
+
+
+                                
+
+                                    <div class="article-entry" itemprop="articleBody">
+                                        
+
+
+                                            
+
+                                                
+                                                                    <p><img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-1.2.1&auto=format&fit=crop&w=2100&q=80" alt="coffee"></p>
+<a id="more"></a>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>这是一个DI(依赖注入)框架，JSR330是依赖注入的规范，在服务器端有spring实现,dagger2使用注解实现  </p>
+<h3 id="Dagger2解决了什么问题"><a href="#Dagger2解决了什么问题" class="headerlink" title="Dagger2解决了什么问题"></a>Dagger2解决了什么问题</h3><ol>
+<li>没有用到反射，编译期生成静态代码，生成一些Factory模板代码，性能上对比Guice,Dagger1提高</li>
+<li>解决了依赖的顺序问题。当有多个类需要初始化(比如A先初始化，B后初始化，A作为B的入参),有依赖的时候要小心顺序问题</li>
+<li>不用自己写单例(单例写法没办法抽象)，少写很多Factory模板代码</li>
+<li>需要用到的时候@Inject，解耦、方便</li>
+</ol>
+<h3 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h3><p>所有代码托管在git@osc上<a href="https://git.oschina.net/checkyo/Dagger2Learn.git" target="_blank" rel="noopener">Dagger2Learn</a></p>
+<h4 id="简单注入"><a href="#简单注入" class="headerlink" title="简单注入"></a>简单注入</h4><blockquote>
+<p>假设MainActivity里有一个<code>NuclearController</code>。现在想用依赖注入，注入到MainActvity里</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NuclearController</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">NuclearController</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//dosomething</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里NuclearController是无参数构造，所以不需要Module提供资源。<code>MainActivityComponent</code>如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MainActivityComponent</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">inject</span><span class="params">(MainActivity activity)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//MainActivity里使用--------------------</span></span><br><span class="line"><span class="meta">@Inject</span></span><br><span class="line">NuclearController nuclearController;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">    setContentView(R.layout.activity_main);</span><br><span class="line">    DaggerMainActivityComponent.builder().build().inject(<span class="keyword">this</span>);</span><br><span class="line">    Preconditions.checkNotNull(nuclearController);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong><em>记得在<code>DaggerMainActivityComponent</code>调用之前Build一下</em></strong>, 按照写代码的顺序，先写自己的模块/layer，然后写<code>Component</code>,Component的作用是桥梁<br>用来连接你在Activity里@Inject的地方和在NuclearController构造函数上的@Inject。这是最简单的例子，通常我们的模型不可能空参，而且会依赖各种其他模型</p>
+<h4 id="Module提供依赖资源"><a href="#Module提供依赖资源" class="headerlink" title="Module提供依赖资源"></a>Module提供依赖资源</h4><p>用@Module标注的类，可以为依赖提供参数，比如说此时NuclearController的构造函数变成</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Inject</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">NuclearController</span><span class="params">(<span class="keyword">long</span> electricity)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.electricity = electricity;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们需要给一个module用来提供构造需要的参数</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Module</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainModule</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> electricity;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MainModule</span><span class="params">(<span class="keyword">long</span> electricity)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.electricity = electricity;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">provideElectry</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> electricity;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//MainActivity调用--------------------</span></span><br><span class="line">DaggerMainActivityComponent.builder().mainModule(<span class="keyword">new</span> MainModule(<span class="number">10000</span>)).build().inject(<span class="keyword">this</span>);</span><br></pre></td></tr></table></figure>
+<p>用@Module修饰类，用@Provides修饰方法，提供需要的资源。对比更改前的代码，只是改了module和注入的地方，改动相当少<br>所以Component就是桥梁，将Controller和Activity连接起来，Module就是Provider,提供这个连接过程中需要的依赖参数</p>
+<h4 id="Scope-Ⅰ"><a href="#Scope-Ⅰ" class="headerlink" title="Scope Ⅰ"></a>Scope Ⅰ</h4><blockquote>
+<p>换一个实际的例子来说明Scope,Component的概念</p>
+</blockquote>
+<pre>
+.
+|-- HeroApplication.java
+|-- common
+|   |-- AppComponent.java
+|   `-- AppModule.java
+</pre>
+<p>dagger2自带一个@Singleton，看看源码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Scope</span></span><br><span class="line"><span class="meta">@Documented</span></span><br><span class="line"><span class="meta">@Retention</span>(RUNTIME)</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Singleton &#123;&#125;</span><br></pre></td></tr></table></figure>
+<p>并没有什么特殊的东西，所以我们自定义Scope只需要换一个名字就行了。Scope代表一种约束，这么说，所有Scope都可以看做是单例，但是不同于我们常规的单例，Scope在哪里用就在哪里是单例，生命周期需要我们自己处理。<br>比如AppComponent和AppModule都是全局性的，跟随应用生命周期的，我们用Singleton修饰</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Singleton</span></span><br><span class="line"><span class="meta">@Component</span>(modules = AppModule<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">interface</span> <span class="title">AppComponent</span> </span>&#123;</span><br><span class="line">    <span class="function">Application <span class="title">getApplication</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">Context <span class="title">getApplicationContext</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//--------------------</span></span><br><span class="line"><span class="meta">@Module</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AppModule</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Application application;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AppModule</span><span class="params">(Application application)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.application = application;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Application <span class="title">provideApplication</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> application;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Context <span class="title">provideApplicationContext</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> application.getApplicationContext();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//------------------在Application里初始化依赖</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HeroApplication</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> AppComponent appComponent;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate();</span><br><span class="line">        appComponent = DaggerAppComponent.builder().appModule(<span class="keyword">new</span> AppModule(<span class="keyword">this</span>)).build();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> AppComponent <span class="title">getAppComponent</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> appComponent;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>AppComponent虽然我们用Singleton修饰了，但是如果不在Application里提供一个get方法，这个Singleton的实例就没有用，接下来可以通过Application.getAppComponent使用了(只做理解，这个例子并没有什么卵用)<br><strong>Scope需要注意一点，一旦Component修饰了Scope，Module提供的方法上就必须声明同样的Scope</strong></p>
+<h4 id="Scope-Ⅱ-amp-dependencies"><a href="#Scope-Ⅱ-amp-dependencies" class="headerlink" title="Scope Ⅱ &amp; dependencies"></a>Scope Ⅱ &amp; dependencies</h4><blockquote>
+<p>为了说明Scope生命周期需要自己定义，我们添加BasicComponent，提供App开发过程中一些基础模型</p>
+</blockquote>
+<pre>
+.
+|-- HeroApplication.java
+|-- common
+|   |-- ActivityScope.java
+|   |-- ApiService.java
+|   |-- AppComponent.java
+|   |-- AppModule.java
+|   |-- BasicComponent.java
+|   |-- DBModule.java
+|   |-- LocalModule.java
+|   |-- NetworkModule.java
+|   `-- ThirdpartyService.java
+|-- main
+|   |-- MainActivity.java
+|   `-- MainActivityComponent.java
+|-- models
+|   `-- WeatherData.java
+</pre>
+
+<p>网络模块，常用的httpclient,gson都在这里提供</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Module</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NetworkModule</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> OkHttpClient <span class="title">provideOkHttpClient</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> OkHttpClient();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Gson <span class="title">provideGson</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Gson();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Retrofit <span class="title">provideRetrofit</span><span class="params">(OkHttpClient okHttpClient, Gson gson)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Retrofit.Builder().baseUrl(<span class="string">"http://api.openweathermap.org/data/2.5/"</span>)</span><br><span class="line">                .client(okHttpClient)</span><br><span class="line">                .addConverterFactory(GsonConverterFactory.create(gson))</span><br><span class="line">                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())</span><br><span class="line">                .build();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ApiService <span class="title">provideApiService</span><span class="params">(Retrofit retrofit)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> retrofit.create(ApiService<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ThirdpartyService <span class="title">provideThirdpartyService</span><span class="params">(Retrofit retrofit)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> retrofit.create(ThirdpartyService<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Local模块，包括Cache和Shareperference,需要依赖Application</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Module</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LocalModule</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Cache <span class="title">provideCache</span><span class="params">(Application application)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Cache(application.getCacheDir(),<span class="number">30</span>*<span class="number">1024</span>*<span class="number">1024</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>BasicComponent基本管理类统一注入</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Singleton</span></span><br><span class="line"><span class="meta">@Component</span>(modules = &#123;AppModule<span class="class">.<span class="keyword">class</span>, <span class="title">NetworkModule</span>.<span class="title">class</span>, <span class="title">LocalModule</span>.<span class="title">class</span>, <span class="title">DBModule</span>.<span class="title">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">interface</span> <span class="title">BasicComponent</span> </span>&#123;</span><br><span class="line">    <span class="function">ApiService <span class="title">getApiService</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">ThirdpartyService <span class="title">getThirdpartyService</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Gson <span class="title">getGson</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">OkHttpClient <span class="title">getOkHttpClient</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Cache <span class="title">getCache</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//Application里调用</span></span><br><span class="line">basicComponent = DaggerBasicComponent.builder()</span><br><span class="line">                .appModule(<span class="keyword">new</span> AppModule(<span class="keyword">this</span>))</span><br><span class="line">                .localModule(<span class="keyword">new</span> LocalModule())</span><br><span class="line">                .networkModule(<span class="keyword">new</span> NetworkModule())</span><br><span class="line">                .build();</span><br></pre></td></tr></table></figure>
+<p>同样的，此时需要给<code>BasicComponent</code>提供get方法，方便我们后面调用<br>好了，现在在Activity里就可以直接使用<strong><em>Application.getBasicComponent().getOkHttpClient()</em></strong>获取实例了，但是饶了这么大圈子，只是这样，跟直接写单例没什么区别。<br>我想直接在MainActivity里使用@Inject注入这些常用工具  </p>
+<ol>
+<li>新建ActivityScope  </li>
+<li>MainActivityComponent里使用依赖BasicComponent模块</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ActivityScope</span></span><br><span class="line"><span class="meta">@Component</span>(dependencies = BasicComponent<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">interface</span> <span class="title">MainActivityComponent</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">inject</span><span class="params">(MainActivity activity)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>MainActivity里只要@Inject指定需要的注入的工具就可以了</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    ApiService apiService;</span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    OkHttpClient okHttpClient;</span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    Gson gson;</span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    Cache cache;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_main);</span><br><span class="line"></span><br><span class="line">        DaggerMainActivityComponent.builder().basicComponent(((HeroApplication) getApplication()).getBasicComponent()).build().inject(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onResume</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onResume();</span><br><span class="line">        <span class="comment">//ApiService.getWeather()...</span></span><br><span class="line">        <span class="comment">//OkHttpClient...</span></span><br><span class="line">        <span class="comment">//gson...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的依赖，生成的代码里需要传入BasicComponent，实际上就是从basicComponent里取出来对MainActivity的@Inject成员变量赋值。因为我们在Application里已经初始化了BasicComponent，所以这里直接取，这里就可以说明@Singleton并没有<br>为我们做什么，生命周期是由我们自己控制的。为什么这里<code>dependencies</code>可以用，因为ActivityScope和Singleton名字不一样，仅此而已。所以说，层级关系，是逻辑上的，实际上的控制需要我们自己实现。<br><strong>为什么在BasicComponent里我们需要暴露一些方法返回OkHttpClient等等？</strong> </p>
+<blockquote>
+<p>This is actually an important property of how components work in Dagger: they do not expose types from their modules unless you explicitly make them available</p>
+</blockquote>
+<h4 id="Subcomponent"><a href="#Subcomponent" class="headerlink" title="Subcomponent"></a>Subcomponent</h4><blockquote>
+<p><code>@Subcomponent</code>同样可以实现上面的效果，<code>@Subcomponent</code>和<code>dependencies</code>的区别有点像继承和组合，Subcomponent可以使用父Component的全部module资源，不需要在父Component里声明一些方法（像getOkHttpClient()这种）<br>插入一段文章：<br>The main difference between them is an objects graph sharing.<br>Subcomponents have access to entire objects graph from their parents while Component dependency gives access only to those which are exposed in Component interface. </p>
+</blockquote>
+<p>以Activity和Fragment的关系为例</p>
+<pre>
+.
+|-- HeroApplication.java
+|-- common
+|   `-- ActivityScope.java
+`-- subcomponentdemo
+    |-- ChildFragment.java
+    |-- ChildFragmentComponent.java
+    |-- SecondActivity.java
+    |-- SecondActivityComponent.java
+    `-- SecondActivityModule.java
+
+</pre>
+
+<p>用法比较奇怪，@Subcomponent修饰的类，需要在他的父Component上添加方法返回Subcomponent</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Module</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SecondActivityModule</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="meta">@ActivityScope</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Random <span class="title">provideRandom</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Random();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//------------------</span></span><br><span class="line"><span class="meta">@ActivityScope</span></span><br><span class="line"><span class="meta">@Component</span>(modules = &#123;SecondActivityModule<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">interface</span> <span class="title">SecondActivityComponent</span> </span>&#123;</span><br><span class="line">    <span class="comment">//如果是用@Subcomponent需要如下声明</span></span><br><span class="line">    <span class="function">ChildFragmentComponent <span class="title">simpleComponent</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//--------------</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SecondActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</span><br><span class="line">    <span class="comment">//生命周期自己把控</span></span><br><span class="line">    <span class="keyword">private</span> SecondActivityComponent secondActivityComponent;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(@Nullable Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.second_activity);</span><br><span class="line">        secondActivityComponent = DaggerSecondActivityComponent.builder().build();</span><br><span class="line">        getSupportFragmentManager().beginTransaction().replace(R.id.main, <span class="keyword">new</span> ChildFragment()).commit();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> SecondActivityComponent <span class="title">getSecondActivityComponent</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> secondActivityComponent;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同样的还是得在Activity里添加Component的get方法,在ChildFragment里@Inject注入就可以了，但是Dagger2不会生成DaggerChildFragmentComponent这样的类，<code>ChildFragmentComponent</code>需要从附着的Activity上的SecondActivityComponent身上获取</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Subcomponent</span></span><br><span class="line"><span class="comment">//享用父级别的全部module</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ChildFragmentComponent</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">inject</span><span class="params">(ChildFragment fragment)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ChildFragment</span> <span class="keyword">extends</span> <span class="title">Fragment</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    Random random;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAttach</span><span class="params">(Activity activity)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onAttach(activity);</span><br><span class="line">        ((SecondActivity) activity).getSecondActivityComponent().simpleComponent().inject(<span class="keyword">this</span>);</span><br><span class="line">        Preconditions.checkNotNull(random);</span><br><span class="line">        Log.i(<span class="string">"TAG"</span>, <span class="string">"random:"</span> + random);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> View <span class="title">onCreateView</span><span class="params">(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> inflater.inflate(R.layout.child_fragment, container, <span class="keyword">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="Lazy和Provider"><a href="#Lazy和Provider" class="headerlink" title="Lazy和Provider"></a>Lazy<T>和Provider<T></h4><blockquote>
+<p>Lazy<T>有点类似懒汉模式的加载，他将创建对象延迟到第一次调用 ，Provider<T>每次get得到的值都是不一样的。<br>TODO: 后面有更高级的用法再补</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    Lazy&lt;PersonController&gt; mPersonProvider;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    Provider&lt;NuclearController&gt; mNuclearProvider;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_main);</span><br><span class="line">        DaggerMainActivityComponent.builder().mainModule(<span class="keyword">new</span> MainModule(<span class="number">10000</span>)).build().inject(<span class="keyword">this</span>);</span><br><span class="line">        mPersonProvider.get().output();<span class="comment">// I am a controller</span></span><br><span class="line">        NuclearController nuclearController1 = mNuclearProvider.get();</span><br><span class="line">        NuclearController nuclearController2 = mNuclearProvider.get();</span><br><span class="line">        Log.i(<span class="string">"TAG"</span>,(nuclearController1==nuclearController2)+<span class="string">""</span>);<span class="comment">//false</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><blockquote>
+<p>我把自己学习的结论写在这里，理解这个过程花了不少时间，建议学习的过程还是看看源码。  </p>
+</blockquote>
+<p><a href="https://medium.com/@patrykpoborca/making-a-best-practice-app-4-dagger-2-267ec5f6c89a#.tk3xmbltz" target="_blank" rel="noopener">Making a Best Practice App #4 — Dagger 2</a><br><a href="http://www.jianshu.com/p/39d1df6c877d" target="_blank" rel="noopener">Dagger2从入门到放弃再到恍然大悟</a><br><a href="http://frogermcs.github.io/dependency-injection-with-dagger-2-custom-scopes/" target="_blank" rel="noopener">Dependency injection with Dagger 2 - Custom scopes</a><br><a href="https://github.com/codepath/android_guides/wiki/Dependency-Injection-with-Dagger-2" target="_blank" rel="noopener">Dependency Injection with Dagger 2</a>  </p>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><ol>
+<li>dagger2要注意声明的component生命周期问题，需要自己控制</li>
+<li>Component里定义的方法名，不要纠结inject名字，可以随意起。是否要注入(void inject(Activity activity);)取决于你是否在用的地方(Activity)使用@Inject标注了变量</li>
+</ol>
+
+                                                                        
+                                    </div>
+                                    <footer class="article-footer">
+                                        <a data-url="https://zequn.tech/2016/07/28/dagger2-tutorial/" data-id="cl2sgx1vo000crgsde2xs5l4s" class="article-share-link">
+                                            分享
+                                        </a>
+                                        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/" rel="tag">android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dagger2/" rel="tag">dagger2</a></li></ul>
+
+                                    </footer>
+
+    </div>
+
+    
+        
+  <nav class="article-nav">
+    
+      <a href="/2020/05/09/%E7%AE%97%E6%B3%95%E9%A2%98-%E5%B0%86Android%E7%9A%84view%E5%86%85%E7%9A%84%E6%8E%A7%E4%BB%B6%E5%85%A8%E9%83%A8%E6%B6%82%E6%88%90%E7%BA%A2%E8%89%B2/" class="article-nav-link">
+        <strong class="article-nav-caption">前一篇</strong>
+        <div class="article-nav-title">
+          
+            算法题-将Android的view内的控件全部涂成红色
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2016/05/17/Task-and-BackStack/" class="article-nav-link">
+        <strong class="article-nav-caption">后一篇</strong>
+        <div class="article-nav-title">Task and the BackStack</div>
+      </a>
+    
+  </nav>
+
+
+            
+
+                
+                    
+                        
+  <div class="gitalk" id="gitalk-container"></div>
+  
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+  
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+
+  <script type="text/javascript">
+    var gitalk = new Gitalk({
+      clientID: 'a98ce1257da9fa717280',
+      clientSecret: '7a91f8c90c490ea5b8b8d773898bdcf3e0572771',
+      repo: 'blog-talk',
+      owner: 'zequntech',
+      admin: ['zequntech'],
+      // id: location.pathname,      // Ensure uniqueness and length less than 50
+      id: md5(location.pathname),
+      distractionFreeMode: false,  // Facebook-like distraction free mode
+      pagerDirection: 'last'
+    })
+
+  gitalk.render('gitalk-container')
+  </script>
+
+                            
+
+</article>
+</section>
+  <footer class="footer">
+  <div class="outer">
+    <!-- <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+    <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div> -->
+    <ul class="list-inline">
+      <li>&copy; 2022 zequn</li>
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean" target="_blank" rel="noopener">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/cat.svg" alt="zequn的博客"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">首页</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">归档</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/categories">分类</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/tags">标签</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">关于</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="搜索">
+        <i class="fe fe-search"></i>
+        搜索
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+  
+<script src="/js/tocbot.min.js"></script>
+
+  <script>
+    // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+    tocbot.init({
+      tocSelector: '.tocbot',
+      contentSelector: '.article-entry',
+      headingSelector: 'h1, h2, h3, h4, h5, h6',
+      hasInnerContainers: true,
+      scrollSmooth: true,
+      positionFixedSelector: '.tocbot',
+      positionFixedClass: 'is-position-fixed',
+      fixedSidebarOffset: 'auto',
+    });
+  </script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+
+</body>
+</html>

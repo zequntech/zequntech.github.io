@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+    <meta name="description" content="用文字记录成长">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    算法题-字符串排列组合 |
+    
+    zequn的博客</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 4.2.0"><link rel="alternate" href="/atom.xml" title="zequn的博客" type="application/atom+xml">
+</head>
+
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-算法题-字符串排列组合" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+  
+    <h1 class="article-title" itemprop="name">
+      算法题-字符串排列组合
+    </h1>
+  
+  
+
+
+
+
+            </header>
+            
+
+                
+                    <div class="article-meta">
+                        <a href="/2020/06/05/%E7%AE%97%E6%B3%95%E9%A2%98-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88/" class="article-date">
+  <time datetime="2020-06-05T02:33:57.000Z" itemprop="datePublished">2020-06-05</time>
+</a>
+                            
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a>
+  </div>
+
+                    </div>
+                    
+
+                        
+                            
+    <div class="tocbot"></div>
+
+
+
+
+
+                                
+
+                                    <div class="article-entry" itemprop="articleBody">
+                                        
+
+
+                                            
+
+                                                
+                                                                    <p><img src="https://images.unsplash.com/photo-1573694279179-764ff2597b5b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2550&q=80" alt="coffee"></p>
+<a id="more"></a>
+
+<h3 id="题目说明"><a href="#题目说明" class="headerlink" title="题目说明"></a>题目说明</h3><blockquote>
+<p>输入一个字符串，打印出该字符串中字符的所有排列。<br>示例:</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：s = "abc"</span><br><span class="line">输出：["abc","acb","bac","bca","cab","cba"]</span><br></pre></td></tr></table></figure>
+
+<h3 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h3><h4 id="2-1"><a href="#2-1" class="headerlink" title="2.1"></a>2.1</h4><p>&emsp;&emsp;将abc分组，<code>[[&quot;abc&quot;,&quot;acb&quot;],[&quot;bac&quot;,&quot;bca&quot;],[&quot;cab&quot;,&quot;cba&quot;]]</code>，第一组可以看作是将a固定，b和c进行排列，第二组可以看做是将b固定，a和c进行排列，同样第三组c固定，a和b进行排列。所以<code>f(3) = 3*f(2)</code>，<code>f(n) = n*f(n-1)</code>。那么可以用递归来实现，对字符串进行遍历，每次遍历需要将当前字符固定，然后递归剩下的字符串进行排列组合，直到递归长度为1。因为要实现排列组合，所以想到数组交换是最高效的，将每次遍历的字符和首字符交换，然后对剩下的字符进行递归，递归结束后交换回来再返回上一层。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> String[] permutation(String s) &#123;</span><br><span class="line">    <span class="keyword">char</span>[] chars = s.toCharArray();</span><br><span class="line">    List&lt;String&gt; result = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    dfs(result, chars, <span class="number">0</span>, chars.length - <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> result.toArray(<span class="keyword">new</span> String[<span class="number">0</span>]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 递归</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> result  用来存放最终排列组合的结果集</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> chars 目标数组</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> start 当前字符串排列组合的起始</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> end 当前字符串排列组合的末尾</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">dfs</span><span class="params">(List&lt;String&gt; result, <span class="keyword">char</span>[] chars, <span class="keyword">int</span> start, <span class="keyword">int</span> end)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (start == end) &#123;</span><br><span class="line">        <span class="comment">// 当前只有一个元素，将此时排列的字符串加入到结果集</span></span><br><span class="line">        result.add(String.valueOf(chars));</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = start; i &lt;= end; i++) &#123;</span><br><span class="line">        <span class="comment">// 将chars[i]固定在start，然后递归start+1直到只有一个元素</span></span><br><span class="line">        swap(chars, i, start);</span><br><span class="line">        dfs(result, chars, start + <span class="number">1</span>, end);</span><br><span class="line">        <span class="comment">// 递归结束后将固定的字符还原</span></span><br><span class="line">        swap(chars, i, start);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-2"><a href="#2-2" class="headerlink" title="2.2"></a>2.2</h4><p>&emsp;&emsp;当前算法还存在一个问题，如果字符串里有重复，比如aab，最终将会得到<code>[&quot;aab&quot;,&quot;aba&quot;,&quot;aab&quot;,&quot;aba&quot;,&quot;baa&quot;,&quot;baa&quot;]</code>，可见结果集里出现了重复。 这个问题在于当遍历字符串的时候，<br>当遍历到第二个的时候，a和a交换最终得到的排列是一样的，还有baa也是一样，递归aa的时候交换就没有意义了。解决这个问题就是在每次交换字符之前先做检查，如果之前出现过，说明当下交换会产生重复。<br>改进后代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 递归</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> result  用来存放最终排列组合的结果集</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> chars 目标数组</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> start 当前字符串排列组合的起始</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> end 当前字符串排列组合的末尾</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">dfs</span><span class="params">(List&lt;String&gt; result, <span class="keyword">char</span>[] chars, <span class="keyword">int</span> start, <span class="keyword">int</span> end)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (start == end) &#123;</span><br><span class="line">        <span class="comment">// 当前只有一个元素，将此时排列的字符串加入到结果集</span></span><br><span class="line">        result.add(String.valueOf(chars));</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    Set&lt;Character&gt; set = <span class="keyword">new</span> HashSet&lt;&gt;();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = start; i &lt;= end; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (set.contains(chars[i])) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        set.add(chars[i]);</span><br><span class="line">        <span class="comment">// 将chars[i]固定在start，然后递归start+1直到只有一个元素</span></span><br><span class="line">        swap(chars, i, start);</span><br><span class="line">        dfs(result, chars, start + <span class="number">1</span>, end);</span><br><span class="line">        <span class="comment">// 递归结束后将固定的字符还原</span></span><br><span class="line">        swap(chars, i, start);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h3><p><a href="https://leetcode-cn.com/problems/zi-fu-chuan-de-pai-lie-lcof/" target="_blank" rel="noopener">剑指offer面试题38. 字符串的排列</a></p>
+
+                                                                        
+                                    </div>
+                                    <footer class="article-footer">
+                                        <a data-url="https://zequn.tech/2020/06/05/%E7%AE%97%E6%B3%95%E9%A2%98-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88/" data-id="cl2sgx1vl0009rgsdc5nq185t" class="article-share-link">
+                                            分享
+                                        </a>
+                                        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E9%80%92%E5%BD%92/" rel="tag">递归</a></li></ul>
+
+                                    </footer>
+
+    </div>
+
+    
+        
+  <nav class="article-nav">
+    
+    
+      <a href="/2020/05/10/apidocjs%E7%94%9F%E6%88%90api%E6%96%87%E6%A1%A3%E5%AE%9E%E8%B7%B5/" class="article-nav-link">
+        <strong class="article-nav-caption">后一篇</strong>
+        <div class="article-nav-title">apidocjs生成api文档实践</div>
+      </a>
+    
+  </nav>
+
+
+            
+
+                
+                    
+                        
+  <div class="gitalk" id="gitalk-container"></div>
+  
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+  
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+
+  <script type="text/javascript">
+    var gitalk = new Gitalk({
+      clientID: 'a98ce1257da9fa717280',
+      clientSecret: '7a91f8c90c490ea5b8b8d773898bdcf3e0572771',
+      repo: 'blog-talk',
+      owner: 'zequntech',
+      admin: ['zequntech'],
+      // id: location.pathname,      // Ensure uniqueness and length less than 50
+      id: md5(location.pathname),
+      distractionFreeMode: false,  // Facebook-like distraction free mode
+      pagerDirection: 'last'
+    })
+
+  gitalk.render('gitalk-container')
+  </script>
+
+                            
+
+</article>
+</section>
+  <footer class="footer">
+  <div class="outer">
+    <!-- <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+    <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div> -->
+    <ul class="list-inline">
+      <li>&copy; 2022 zequn</li>
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean" target="_blank" rel="noopener">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/cat.svg" alt="zequn的博客"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">首页</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">归档</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/categories">分类</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/tags">标签</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">关于</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="搜索">
+        <i class="fe fe-search"></i>
+        搜索
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+  
+<script src="/js/tocbot.min.js"></script>
+
+  <script>
+    // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+    tocbot.init({
+      tocSelector: '.tocbot',
+      contentSelector: '.article-entry',
+      headingSelector: 'h1, h2, h3, h4, h5, h6',
+      hasInnerContainers: true,
+      scrollSmooth: true,
+      positionFixedSelector: '.tocbot',
+      positionFixedClass: 'is-position-fixed',
+      fixedSidebarOffset: 'auto',
+    });
+  </script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+
+</body>
+</html>

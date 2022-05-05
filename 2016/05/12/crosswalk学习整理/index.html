@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+    <meta name="description" content="用文字记录成长">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    crosswalk学习整理 |
+    
+    zequn的博客</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 4.2.0"><link rel="alternate" href="/atom.xml" title="zequn的博客" type="application/atom+xml">
+</head>
+
+<body>
+<main class="content">
+  <section class="outer">
+  <article id="post-crosswalk学习整理" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+  
+    <h1 class="article-title" itemprop="name">
+      crosswalk学习整理
+    </h1>
+  
+  
+
+
+
+
+            </header>
+            
+
+                
+                    <div class="article-meta">
+                        <a href="/2016/05/12/crosswalk%E5%AD%A6%E4%B9%A0%E6%95%B4%E7%90%86/" class="article-date">
+  <time datetime="2016-05-12T02:32:23.000Z" itemprop="datePublished">2016-05-12</time>
+</a>
+                            
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/android/">android</a>
+  </div>
+
+                    </div>
+                    
+
+                        
+                            
+    <div class="tocbot"></div>
+
+
+
+
+
+                                
+
+                                    <div class="article-entry" itemprop="articleBody">
+                                        
+
+
+                                            
+
+                                                
+                                                                    <h3 id="简单说明"><a href="#简单说明" class="headerlink" title="简单说明"></a>简单说明</h3><blockquote>
+<p>Crosswalk使用了Chromium内核，这意味着只能在Android 4.0以上才能使用，安卓4.4已经采用Chrominum内核，如果只是做简单的网页显示，原生的足够了，4.4以下的webkit内核有许多bug，各个版本不一致，api使用都有些不同（文件上传在4.4~4.4.2这之间的根本无解）。对于要做hybrid应用以及想解决平台一致性问题可以使用Crosswalk，但是牺牲的是apk的体积，集成Crosswalk体积至少要增大20M+(官方提供了shared模式，apk里不带runtime环境，首次运行时下载安装,可以自由配置下载地址)</p>
+</blockquote>
+<a id="more"></a>
+<h3 id="开发方式一"><a href="#开发方式一" class="headerlink" title="开发方式一"></a>开发方式一</h3><blockquote>
+<p>如果要使用Crosswalk提供的开发方式，需要配置开发环境，并且后续的创建项目打包都是基于命令行形式的，适合不会Android的web开发人员使用，比如下面这些都需要安装</p>
+</blockquote>
+<ul>
+<li>Java JDK</li>
+<li>Apache Ant</li>
+<li>Android SDK</li>
+<li>NPM</li>
+<li>Crosswalk App Tools</li>
+</ul>
+<p><a href="http://www.tuicool.com/articles/RfyEjae" target="_blank" rel="noopener">中文参考</a><br><a href="https://crosswalk-project.org/apis/embeddingapidocs/reference/org/xwalk/core/XWalkView.html" target="_blank" rel="noopener">官方文档</a></p>
+<h3 id="开发方式二-Embedding-the-Crosswalk-Project"><a href="#开发方式二-Embedding-the-Crosswalk-Project" class="headerlink" title="开发方式二  Embedding the Crosswalk Project"></a>开发方式二  Embedding the Crosswalk Project</h3><blockquote>
+<p>相当于嵌入一个WebView<br>Using the embedding API is only recommended for cases where you have a substantial amount of Java code in your application, but want to write the UI (or parts of the UI) using web technologies.   </p>
+</blockquote>
+<ul>
+<li>XWalkView默认不能设置Visible和动画<br>XWalkView represents an Android view for web apps/pages. Thus most of attributes for Android view are valid for this class. Since it internally uses android.view.SurfaceView for rendering web pages by default, it can’t be resized, rotated, transformed and animated due to the limitations of SurfaceView. Alternatively, if the preference key <code>ANIMATABLE_XWALK_VIEW</code> is set to True, XWalkView can be transformed and animated because TextureView is intentionally used to render web pages for animation support. Besides, XWalkView won’t be rendered if it’s invisible.</li>
+<li>XWalkView需要开启硬件加速<br>XWalkView needs hardware acceleration to render web pages. As a result, the AndroidManifest.xml of the caller’s app must be appended with the attribute “android:hardwareAccelerated” and its value must be set as “true”.</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">application</span> <span class="attr">android:name</span>=<span class="string">"android.app.Application"</span> <span class="attr">android:label</span>=<span class="string">"XWalkUsers"</span></span></span><br><span class="line"><span class="tag">     <span class="attr">android:hardwareAccelerated</span>=<span class="string">"true"</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<ul>
+<li>注意生命周期的接管<br>Unlike other Android views, this class has to listen to system events like application life cycle, intents, and activity result. The web engine inside this view need to get and handle them. And the onDestroy() method of XWalkView MUST be called explicitly when an XWalkView won’t be used anymore, otherwise it will cause the memory leak from the native side of the web engine. It’s similar to the destroy() method of Android WebView. For example: </li>
+</ul>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> android.app.Activity;</span><br><span class="line"><span class="keyword">import</span> android.os.Bundle;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.xwalk.core.XWalkResourceClient;</span><br><span class="line"><span class="keyword">import</span> org.xwalk.core.XWalkUIClient;</span><br><span class="line"><span class="keyword">import</span> org.xwalk.core.XWalkView;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</span><br><span class="line">   XWalkView mXwalkView;</span><br><span class="line"></span><br><span class="line">   <span class="class"><span class="keyword">class</span> <span class="title">MyResourceClient</span> <span class="keyword">extends</span> <span class="title">XWalkResourceClient</span> </span>&#123;</span><br><span class="line">       MyResourceClient(XWalkView view) &#123;</span><br><span class="line">           <span class="keyword">super</span>(view);</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="meta">@Override</span></span><br><span class="line">       <span class="function">WebResourceResponse <span class="title">shouldInterceptLoadRequest</span><span class="params">(XWalkView view, String url)</span> </span>&#123;</span><br><span class="line">           <span class="comment">// Handle it here.</span></span><br><span class="line">           ...</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="class"><span class="keyword">class</span> <span class="title">MyUIClient</span> <span class="keyword">extends</span> <span class="title">XWalkUIClient</span> </span>&#123;</span><br><span class="line">       MyUIClient(XWalkView view) &#123;</span><br><span class="line">           <span class="keyword">super</span>(view);</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="meta">@Override</span></span><br><span class="line">       <span class="function"><span class="keyword">void</span> <span class="title">onFullscreenToggled</span><span class="params">(XWalkView view, String url)</span> </span>&#123;</span><br><span class="line">           <span class="comment">// Handle it here.</span></span><br><span class="line">           ...</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">       mXwalkView = <span class="keyword">new</span> XWalkView(<span class="keyword">this</span>, <span class="keyword">null</span>);</span><br><span class="line">       setContentView(mXwalkView);</span><br><span class="line">       mXwalkView.setResourceClient(<span class="keyword">new</span> MyResourceClient(mXwalkView));</span><br><span class="line">       mXwalkView.setUIClient(<span class="keyword">new</span> MyUIClient(mXwalkView));</span><br><span class="line">       mXwalkView.load(<span class="string">"http://www.crosswalk-project.org"</span>, <span class="keyword">null</span>);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onPause</span><span class="params">()</span> </span>&#123;</span><br><span class="line">       <span class="keyword">super</span>.onPause();</span><br><span class="line">       <span class="keyword">if</span> (mXwalkView != <span class="keyword">null</span>) &#123;</span><br><span class="line">           mXwalkView.pauseTimers();</span><br><span class="line">           mXwalkView.onHide();</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onResume</span><span class="params">()</span> </span>&#123;</span><br><span class="line">       <span class="keyword">super</span>.onResume();</span><br><span class="line">       <span class="keyword">if</span> (mXwalkView != <span class="keyword">null</span>) &#123;</span><br><span class="line">           mXwalkView.resumeTimers();</span><br><span class="line">           mXwalkView.onShow();</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onDestroy</span><span class="params">()</span> </span>&#123;</span><br><span class="line">       <span class="keyword">super</span>.onDestroy();</span><br><span class="line">       <span class="keyword">if</span> (mXwalkView != <span class="keyword">null</span>) &#123;</span><br><span class="line">           mXwalkView.onDestroy();</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onActivityResult</span><span class="params">(<span class="keyword">int</span> requestCode, <span class="keyword">int</span> resultCode, Intent data)</span> </span>&#123;</span><br><span class="line">       <span class="keyword">if</span> (mXwalkView != <span class="keyword">null</span>) &#123;</span><br><span class="line">           mXwalkView.onActivityResult(requestCode, resultCode, data);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onNewIntent</span><span class="params">(Intent intent)</span> </span>&#123;</span><br><span class="line">       <span class="keyword">if</span> (mXwalkView != <span class="keyword">null</span>) &#123;</span><br><span class="line">           mXwalkView.onNewIntent(intent);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置gradle"><a href="#配置gradle" class="headerlink" title="配置gradle"></a>配置gradle</h4><ul>
+<li>添加仓库<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">repositories &#123;</span><br><span class="line">    mavenLocal()</span><br><span class="line">    maven &#123;</span><br><span class="line">        url <span class="string">'https://download.01.org/crosswalk/releases/crosswalk/android/maven2'</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>添加cpu配置<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">android &#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    splits &#123;</span><br><span class="line">        abi &#123;</span><br><span class="line">            enable <span class="literal">true</span></span><br><span class="line">            reset()</span><br><span class="line">            include <span class="string">'x86'</span>, <span class="string">'armeabi-v7a'</span> <span class="comment">//select ABIs to build APKs for</span></span><br><span class="line">            universalApk <span class="literal">true</span> <span class="comment">//generate an additional APK that contains all the ABIs</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    productFlavors &#123;</span><br><span class="line">        armv7 &#123;</span><br><span class="line">            versionCode defaultConfig.versionCode + <span class="number">2</span></span><br><span class="line">            ndk &#123;</span><br><span class="line">                abiFilters <span class="string">"armeabi-v7a"</span>, <span class="string">""</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        x86 &#123;</span><br><span class="line">            versionCode defaultConfig.versionCode + <span class="number">4</span></span><br><span class="line">            ndk &#123;</span><br><span class="line">                abiFilters <span class="string">"x86"</span>, <span class="string">""</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>添加XWalkview依赖<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile <span class="string">'org.xwalk:xwalk_core_library:18.48.477.13'</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="混淆配置"><a href="#混淆配置" class="headerlink" title="混淆配置"></a>混淆配置</h4><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">-keepclasseswithmembernames <span class="class"><span class="keyword">class</span> * &#123;</span>native &lt;methods&gt;;&#125;</span><br><span class="line"></span><br><span class="line">-keepattributes JNINamespace</span><br><span class="line">-keepattributes CalledByNative</span><br><span class="line">-keepattributes Annotation</span><br><span class="line">-keepattributes EnclosingMethod</span><br><span class="line"></span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">org</span>.<span class="title">xwalk</span>.&#123;</span> *; &#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">interface</span> <span class="title">org</span>.<span class="title">xwalk</span>.&#123;</span> *; &#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">com</span>.<span class="title">example</span>.<span class="title">extension</span>.**&#123;</span> *; &#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">org</span>.<span class="title">crosswalkproject</span>.*&#123;</span> *; &#125;</span><br><span class="line"></span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">org</span>.<span class="title">chromium</span>.<span class="title">base</span>.<span class="title">Native</span></span></span><br><span class="line"><span class="class">-<span class="title">keep</span> <span class="title">class</span> <span class="title">org</span>.<span class="title">chromium</span>.<span class="title">base</span>.<span class="title">annotations</span>.<span class="title">JNINamespace</span></span></span><br><span class="line"><span class="class">-<span class="title">keepclasseswithmembers</span> <span class="title">class</span> <span class="title">org</span>.<span class="title">chromium</span>. &#123;</span> <span class="meta">@org</span>.chromium.base.AccessedByNative &lt;methods&gt;; &#125;</span><br><span class="line">-keepclasseswithmembers <span class="class"><span class="keyword">class</span> <span class="title">org</span>.<span class="title">chromium</span>. &#123;</span> <span class="meta">@org</span>.chromium.base.Native &lt;methods&gt;; &#125;</span><br><span class="line"></span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">org</span>.<span class="title">chromium</span>.** &#123;</span> native &lt;methods&gt;; &#125;</span><br><span class="line"></span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">org</span>.<span class="title">chromium</span>.<span class="title">base</span>.<span class="title">UsedBy</span></span></span><br><span class="line"><span class="class">#-<span class="title">keep</span> @<span class="title">org</span>.<span class="title">chromium</span>.<span class="title">base</span>.<span class="title">UsedBy</span> <span class="title">class</span></span></span><br><span class="line"><span class="class">-<span class="title">keepclassmembers</span> <span class="title">class</span> * &#123;</span> <span class="meta">@org</span>.chromium.base.UsedBy *; &#125;</span><br><span class="line"></span><br><span class="line">#-keep @org.chromium.base.annotations.JNINamespace class</span><br><span class="line">-keepclassmembers <span class="class"><span class="keyword">class</span> * &#123;</span> <span class="meta">@org</span>.chromium.base.annotations.CalledByNative *; &#125;</span><br><span class="line">-dontnote org.chromium.net.AndroidKeyStore</span><br><span class="line">-dontnote org.chromium.net.UrlRequest$ResponseHeadersMap</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">org</span>.<span class="title">chromium</span>.<span class="title">ui</span>.<span class="title">ColorPickerAdvanced</span> &#123;</span> &lt;methods&gt;; &#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">org</span>.<span class="title">chromium</span>.<span class="title">ui</span>.<span class="title">ColorPickerMoreButton</span> &#123;</span> &lt;methods&gt;; &#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">org</span>.<span class="title">chromium</span>.<span class="title">ui</span>.<span class="title">ColorPickerSimple</span> &#123;</span> &lt;methods&gt;; &#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="实现文件选择-Implementing-a-file-input-with-Camera-support-in-Android-with-CrossWalk"><a href="#实现文件选择-Implementing-a-file-input-with-Camera-support-in-Android-with-CrossWalk" class="headerlink" title="实现文件选择: Implementing a file input with Camera support in Android with CrossWalk"></a>实现文件选择: Implementing a file input with Camera support in Android with CrossWalk</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onActivityResult</span><span class="params">(<span class="keyword">int</span> requestCode, <span class="keyword">int</span> resultCode, Intent data)</span> </span>&#123;</span><br><span class="line">    xWalkView.onActivityResult(requestCode, resultCode, data);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>should be overridden into the class XWalkUIClient:</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">openFileChooser</span><span class="params">(XWalkView view, <span class="keyword">final</span> ValueCallback uploadFile, String acceptType, String capture)</span> </span>&#123;</span><br><span class="line">    uploadFile.onReceiveValue(<span class="keyword">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="链接Link"><a href="#链接Link" class="headerlink" title="链接Link"></a>链接Link</h4><p><a href="http://www.programcreek.com/java-api-examples/index.php?api=org.xwalk.core.XWalkView" target="_blank" rel="noopener">大量sample</a><br><a href="http://developers-club.com/posts/263655/" target="_blank" rel="noopener">Crosswalk Project — replacement of Android WebView. Integration problems</a></p>
+<h4 id="XWalkPreferences-setValue只能在XWalkView未初始化之前调用，全局性配置"><a href="#XWalkPreferences-setValue只能在XWalkView未初始化之前调用，全局性配置" class="headerlink" title="XWalkPreferences.setValue只能在XWalkView未初始化之前调用，全局性配置"></a>XWalkPreferences.setValue只能在XWalkView未初始化之前调用，全局性配置</h4><h4 id="操蛋的回退键问题"><a href="#操蛋的回退键问题" class="headerlink" title="操蛋的回退键问题"></a>操蛋的回退键问题</h4><blockquote>
+<p>XWalkView会接管Activity的onKeyUp，默认返回键就是回退历史，但是没有提供接口去控制。导致，一个页面有输入框，弹出输入法后不是关闭输入法，而是直接回退历史记录。不明白为什么要这么设计<br>解决方案：重写dispatchKeyEvent，当发现是回退键按下直接返回false，扔给外层处理</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">XWalkViewEx</span> <span class="keyword">extends</span> <span class="title">XWalkView</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">XWalkViewEx</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context);</span><br><span class="line">        init();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">XWalkViewEx</span><span class="params">(Context context, Activity activity)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context, activity);</span><br><span class="line">        init();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">XWalkViewEx</span><span class="params">(Context context, AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context, attrs);</span><br><span class="line">        init();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">dispatchKeyEvent</span><span class="params">(KeyEvent event)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (event.getAction() == KeyEvent.ACTION_DOWN &amp;&amp; event.getKeyCode() == KeyEvent.KEYCODE_BACK) &#123;</span><br><span class="line">            <span class="comment">//我要自己处理回退键</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.dispatchKeyEvent(event);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">iniConfig</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        XWalkPreferences.setValue(XWalkPreferences.ANIMATABLE_XWALK_VIEW, <span class="keyword">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onKeyBack</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mXWalkView.getNavigationHistory().canGoBack()) &#123;</span><br><span class="line">        mXWalkView.getNavigationHistory().navigate(XWalkNavigationHistory.Direction.BACKWARD, <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+                                                                        
+                                    </div>
+                                    <footer class="article-footer">
+                                        <a data-url="https://zequn.tech/2016/05/12/crosswalk%E5%AD%A6%E4%B9%A0%E6%95%B4%E7%90%86/" data-id="cl2sgx1vi0006rgsdbi5chqeb" class="article-share-link">
+                                            分享
+                                        </a>
+                                        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/crosswalk/" rel="tag">crosswalk</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/webview/" rel="tag">webview</a></li></ul>
+
+                                    </footer>
+
+    </div>
+
+    
+        
+  <nav class="article-nav">
+    
+      <a href="/2016/05/12/android-studio%E5%B8%B8%E7%94%A8%E6%8F%92%E4%BB%B6%E5%92%8C%E5%BF%AB%E6%8D%B7%E9%94%AE/" class="article-nav-link">
+        <strong class="article-nav-caption">前一篇</strong>
+        <div class="article-nav-title">
+          
+            android studio常用插件和快捷键
+          
+        </div>
+      </a>
+    
+    
+  </nav>
+
+
+            
+
+                
+                    
+                        
+  <div class="gitalk" id="gitalk-container"></div>
+  
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+  
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+
+  <script type="text/javascript">
+    var gitalk = new Gitalk({
+      clientID: 'a98ce1257da9fa717280',
+      clientSecret: '7a91f8c90c490ea5b8b8d773898bdcf3e0572771',
+      repo: 'blog-talk',
+      owner: 'zequntech',
+      admin: ['zequntech'],
+      // id: location.pathname,      // Ensure uniqueness and length less than 50
+      id: md5(location.pathname),
+      distractionFreeMode: false,  // Facebook-like distraction free mode
+      pagerDirection: 'last'
+    })
+
+  gitalk.render('gitalk-container')
+  </script>
+
+                            
+
+</article>
+</section>
+  <footer class="footer">
+  <div class="outer">
+    <!-- <div class="float-right">
+      <ul class="list-inline">
+  
+    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+    <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div> -->
+    <ul class="list-inline">
+      <li>&copy; 2022 zequn</li>
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean" target="_blank" rel="noopener">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+
+</main>
+<aside class="sidebar">
+  <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+    <div class="logo">
+      <a href="/"><img src="/images/cat.svg" alt="zequn的博客"></a>
+    </div>
+  
+  <ul class="nav nav-main">
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/">首页</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/archives">归档</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/categories">分类</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/tags">标签</a>
+      </li>
+    
+      <li class="nav-item">
+        <a class="nav-item-link" href="/about">关于</a>
+      </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="搜索">
+        <i class="fe fe-search"></i>
+        搜索
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+          <i class="fe fe-feed"></i>
+        </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+</aside>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+  
+<script src="/js/tocbot.min.js"></script>
+
+  <script>
+    // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+    tocbot.init({
+      tocSelector: '.tocbot',
+      contentSelector: '.article-entry',
+      headingSelector: 'h1, h2, h3, h4, h5, h6',
+      hasInnerContainers: true,
+      scrollSmooth: true,
+      positionFixedSelector: '.tocbot',
+      positionFixedClass: 'is-position-fixed',
+      fixedSidebarOffset: 'auto',
+    });
+  </script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+
+</body>
+</html>
